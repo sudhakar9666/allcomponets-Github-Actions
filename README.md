@@ -81,6 +81,8 @@ dashboard and for token from need to security and gereate the token will sue in 
 
 ###Project deployment steps### 
 
+#need to install docker and awscli inside ec2 then only it will urn the code host the application...   
+
 Workflow Overview
 name: Full Python App CI/CD
 
