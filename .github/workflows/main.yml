@@ -103,7 +103,7 @@ jobs:
   deploy:
     name: Deploy to EC2 (Manual Approval)
     needs: build-and-scan
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment:
       name: production
     steps:
