@@ -138,13 +138,13 @@ jobs:
         with:
           channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
           slack-message: "✅ Deployment completed successfully on ${{ env.IMAGE_TAG }}!"
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
 
       # Slack notification on FAILURE
-      - name: Slack Notification (Failure)
-        if: failure()
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
-          slack-message: "❌ Deployment failed on ${{ env.IMAGE_TAG }}!"
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
+      # - name: Slack Notification (Failure)
+      #   if: failure()
+      #   uses: slackapi/slack-github-action@v1.23.0
+      #   with:
+      #     channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+      #     slack-message: "❌ Deployment failed on ${{ env.IMAGE_TAG }}!"
+      #     bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
