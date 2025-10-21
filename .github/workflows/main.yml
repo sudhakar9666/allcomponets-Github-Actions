@@ -100,13 +100,12 @@ jobs:
           name: docker-image-info
           path: image-info.txt
 
-  deploy-to-ec2:
+  deploy:
     name: Deploy to EC2 (Manual Approval)
     needs: build-and-scan
     runs-on: self-hosted
     environment:
       name: production
-      url: http://${{ secrets.EC2_PUBLIC_IP }}
     steps:
       - name: Wait for Approval
         uses: hmarr/auto-approve-action@v2
