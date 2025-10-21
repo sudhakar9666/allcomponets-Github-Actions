@@ -100,28 +100,28 @@ jobs:
           name: docker-image-info
           path: image-info.txt
 
-  # deploy-to-ec2:
-  #   name: Deploy to EC2 (Manual Approval)
-  #   needs: build-and-scan
-  #   runs-on: self-hosted
-  #   environment:
-  #     name: production
-  #     url: http://<EC2_PUBLIC_IP>
-  #   steps:
-  #     - name: Wait for Approval
-  #       uses: hmarr/auto-approve-action@v2
+  deploy-to-ec2:
+    name: Deploy to EC2 (Manual Approval)
+    needs: build-and-scan
+    runs-on: self-hosted
+    environment:
+      name: production
+      url: http://${{ secrets.EC2_PUBLIC_IP }}
+    steps:
+      - name: Wait for Approval
+        uses: hmarr/auto-approve-action@v2
 
-  #     - name: Deploy Docker Image to EC2
-  #       uses: appleboy/ssh-action@v0.1.6
-  #       with:
-  #         host: ${{ secrets.EC2_PUBLIC_IP }}
-  #         username: ec2-user
-  #         key: ${{ secrets.EC2_SSH_KEY }}
-  #         script: |
-  #           docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-  #           docker stop my-python-app || true
-  #           docker rm my-python-app || true
-  #           docker run -d --name my-python-app -p 80:5000 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+      - name: Deploy Docker Image to EC2
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            docker stop my-python-app || true
+            docker rm my-python-app || true
+            docker run -d --name my-python-app -p 80:5000 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
   #     - name: Slack Notification
   #       uses: slackapi/slack-github-action@v1.23.0
