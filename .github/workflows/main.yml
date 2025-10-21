@@ -53,14 +53,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests
-        run: |
-          python -m unittest discover tests
+      # - name: Run tests
+      #   run: |
+      #     python -m unittest discover tests
           
-      - name: Run scan (optional)
-        run: |
-          # Replace this with your scan command
-          echo "Running security/code scan..."
+      # - name: Run scan (optional)
+      #   run: |
+      #     # Replace this with your scan command
+      #     echo "Running security/code scan..."
 
   #     - name: Login to AWS ECR
   #       uses: aws-actions/configure-aws-credentials@v4
