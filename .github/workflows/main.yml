@@ -15,7 +15,7 @@ jobs:
 
   build-and-scan:
     name: Build, Scan & Test
-    runs-on: self-hosted
+    runs-on: Ubuntu-latest
     strategy:
       matrix:
         python-version: [3.11, 3.10]
