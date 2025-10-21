@@ -38,7 +38,7 @@ jobs:
 
   build-and-scan:
     name: Build, Scan & Test
-    runs-on: self-hosted   # or use 'ubuntu-latest' for GitHub-hosted runners
+    runs-on: ubuntu-latest   # or use 'ubuntu-latest' for GitHub-hosted runners
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
