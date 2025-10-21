@@ -91,7 +91,7 @@ jobs:
           token: ${{ secrets.SONAR_TOKEN }}
 
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image-info
           path: image-info.txt
