@@ -41,7 +41,7 @@ ec2 then select.
 
 - login into ec2 then run the above script to connect the runner to gitbu actions.
 
-- will sue ./svs.sh to automating run the runner
+- will use ./svs.sh to automating run the runner
 
 - sudo .svc.sh install,  start,stop
   
