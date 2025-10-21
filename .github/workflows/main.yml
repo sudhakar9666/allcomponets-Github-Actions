@@ -47,7 +47,13 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
-
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+         path: ~/.cache/pip
+         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+         restore-keys: |
+           ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -125,9 +131,20 @@ jobs:
             docker run -d --name my-python-app -p 80:5000 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
 
-  #     - name: Slack Notification
-  #       uses: slackapi/slack-github-action@v1.23.0
-  #       with:
-  #         channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
-  #         slack-message: "Deployment completed successfully on ${{ env.IMAGE_TAG }}!"
-  #         slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+  ## Slack notification on SUCCESS
+      - name: Slack Notification (Success)
+        if: success()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          slack-message: "✅ Deployment completed successfully on ${{ env.IMAGE_TAG }}!"
+          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      # Slack notification on FAILURE
+      - name: Slack Notification (Failure)
+        if: failure()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          slack-message: "❌ Deployment failed on ${{ env.IMAGE_TAG }}!"
+          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
