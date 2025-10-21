@@ -1,4 +1,4 @@
-# allcomponets-gitbuactions
+# allcomponets-Github-Actions
 Task:
 -currenty we are deploying python app docker image pusinging to ecr after deploying to ec2 instance and we are using ec2 instance as github actions slef hosted runner.  
 -using all github  actions comnentes we are using in this  deployment configuration file such as,  
