@@ -83,12 +83,16 @@ jobs:
         with:
           image-ref: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
-      - name: SonarQube Scan
+      - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2.2.0
+        env:
+         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          projectKey: ${{ secrets.SONAR_PROJECT_KEY }}
-          organization: your-org-name
-          token: ${{ secrets.SONAR_TOKEN }}
+         args: >
+          -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+          -Dsonar.organization=sudhakar9666
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
