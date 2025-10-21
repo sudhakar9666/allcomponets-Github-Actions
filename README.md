@@ -81,5 +81,265 @@ dashboard and for token from need to security and gereate the token will sue in 
 
 ###Project deployment steps### 
 
+Workflow Overview
+name: Full Python App CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+
+Explanation:
+
+The workflow triggers automatically on push to main branch.
+
+workflow_dispatch allows manual runs from GitHub UI.
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  IMAGE_TAG: ${{ github.sha }}
+
+
+Explanation:
+
+Sets environment variables globally for all jobs.
+
+AWS_REGION and ECR_REPOSITORY are read from GitHub variables.
+
+IMAGE_TAG is set to the commit SHA for versioning Docker images.
+
+Job 1: build-and-scan
+build-and-scan:
+  name: Build, Scan & Test
+  runs-on: ubuntu-latest
+
+
+Explanation:
+
+Job runs on Ubuntu GitHub runner.
+
+Name indicates it handles build, scanning, and testing.
+
+Step 1: Checkout code
+- name: Checkout Code
+  uses: actions/checkout@v4
+
+
+Explanation:
+
+Pulls the repository code into the runner so you can build/test/deploy.
+
+Step 2: Set up Python
+- name: Set up Python 3.11
+  uses: actions/setup-python@v4
+  with:
+    python-version: 3.11
+
+
+Explanation:
+
+Installs Python 3.11 on the runner.
+
+Allows running Python commands and installing dependencies.
+
+Step 3: Cache pip dependencies
+- name: Cache pip dependencies
+  uses: actions/cache@v3
+  with:
+    path: ~/.cache/pip
+    key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+    restore-keys: |
+      ${{ runner.os }}-pip-
+
+
+Explanation:
+
+Stores pip packages cache to speed up future runs.
+
+Cache key is based on requirements.txt hash, so it updates if dependencies change.
+
+Step 4: Install dependencies
+- name: Install dependencies
+  run: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+
+
+Explanation:
+
+Upgrades pip.
+
+Installs all Python dependencies from requirements.txt.
+
+Step 5: Login to AWS ECR
+- name: Login to AWS ECR
+  uses: aws-actions/configure-aws-credentials@v4
+  with:
+    aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    aws-region: ${{ env.AWS_REGION }}
+
+
+Explanation:
+
+Configures AWS CLI with credentials to interact with ECR and other AWS services.
+
+Step 6: Build Docker Image
+- name: Build Docker Image
+  run: docker build -t ${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
+
+
+Explanation:
+
+Builds Docker image with your Python app.
+
+Tags image with repository name and commit SHA.
+
+Step 7: Push Docker Image to ECR
+- name: Push Docker Image to ECR
+  run: |
+    aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+    docker tag ${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+    docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+
+Explanation:
+
+Logs in to AWS ECR.
+
+Tags Docker image for ECR repository.
+
+Pushes image to ECR.
+
+Step 8: Trivy Security Scan
+- name: Trivy Security Scan
+  uses: aquasecurity/trivy-action@0.28.0
+  with:
+    image-ref: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+
+Explanation:
+
+Runs Trivy security scan on the Docker image to detect vulnerabilities.
+
+Step 9: SonarCloud Scan
+- name: SonarCloud Scan
+  uses: SonarSource/sonarcloud-github-action@v2.2.0
+  env:
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  with:
+    args: >
+      -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+      -Dsonar.organization=sudhakar9666
+      -Dsonar.host.url=https://sonarcloud.io
+      -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+
+Explanation:
+
+Performs code quality scan with SonarCloud.
+
+Uses project key and token from GitHub secrets.
+
+Step 10: Upload Build Artifacts
+- name: Upload Build Artifacts
+  uses: actions/upload-artifact@v4
+  with:
+    name: docker-image-info
+    path: image-info.txt
+
+
+Explanation:
+
+Uploads artifact (image-info.txt) so it can be downloaded later or used by other jobs.
+
+Job 2: deploy
+deploy:
+  name: Deploy to EC2 (Manual Approval)
+  needs: build-and-scan
+  runs-on: ubuntu-latest
+  environment:
+    name: production
+
+
+Explanation:
+
+Job depends on build-and-scan.
+
+Deploys to EC2 using manual approval via GitHub environment protection rules.
+
+Step 1: Deploy Docker Image to EC2
+- name: Deploy Docker Image to EC2
+  uses: appleboy/ssh-action@v0.1.6
+  with:
+    host: ${{ secrets.EC2_PUBLIC_IP }}
+    username: ubuntu
+    key: ${{ secrets.EC2_SSH_KEY }}
+    script: |
+      aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
+      docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+      docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+      docker stop my-python-app || true
+      docker rm my-python-app || true
+      docker run -d --name my-python-app -p 80:5000 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+
+Explanation:
+
+Connects to EC2 via SSH using private key.
+
+Logs in to ECR on EC2.
+
+Pulls the latest Docker image.
+
+Stops & removes old container if exists.
+
+Runs a new Docker container with your app.
+
+Step 2 & 3: Slack Notifications
+- name: Slack Notification (Success)
+  if: success()
+  uses: slackapi/slack-github-action@v1.23.0
+  with:
+    channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+    slack-message: "✅ Deployment completed successfully on ${{ env.IMAGE_TAG }}!"
+    slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+
+- name: Slack Notification (Failure)
+  if: failure()
+  uses: slackapi/slack-github-action@v1.23.0
+  with:
+    channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+    slack-message: "❌ Deployment failed on ${{ env.IMAGE_TAG }}!"
+    slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+
+
+Explanation:
+
+Sends Slack notifications depending on deployment result.
+
+success() triggers if all previous steps succeeded.
+
+failure() triggers if any step failed.
+
+Summary of workflow steps
+Job	Step	Purpose
+build-and-scan	Checkout Code	Get repo code on runner
+build-and-scan	Set up Python	Install Python runtime
+build-and-scan	Cache pip dependencies	Speed up dependency installs
+build-and-scan	Install dependencies	Install packages from requirements.txt
+build-and-scan	AWS ECR Login	Configure AWS CLI to push Docker
+build-and-scan	Build Docker image	Build container with app
+build-and-scan	Push Docker image	Push image to ECR
+build-and-scan	Trivy Scan	Security scan on Docker image
+build-and-scan	SonarCloud Scan	Code quality scan
+build-and-scan	Upload Artifact	Save build info
+deploy	SSH Deploy	Pull image & run container on EC2
+deploy	Slack Success	Notify success in Slack
+deploy	Slack Failure	Notify failure in Slack
+
 
 
