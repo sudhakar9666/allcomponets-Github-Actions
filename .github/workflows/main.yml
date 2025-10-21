@@ -12,32 +12,55 @@ env:
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
+#this is matrix build will sue multiple version fo the packages##
+  # build-and-scan:
+  #   name: Build, Scan & Test
+  #   runs-on: Ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       python-version: [3.11, 3.10]
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v4
+
+  #     - name: Set up Python ${{ matrix.python-version }}
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
+
+  #     - name: Cache pip dependencies
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: ~/.cache/pip
+  #         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-pip-
 
   build-and-scan:
     name: Build, Scan & Test
-    runs-on: Ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.11, 3.10]
+    runs-on: self-hosted   # or use 'ubuntu-latest' for GitHub-hosted runners
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.11
 
-      - name: Cache pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
+      - name: Run tests
+        run: |
+          python -m unittest discover tests
+          
+      - name: Run scan (optional)
+        run: |
+          # Replace this with your scan command
+          echo "Running security/code scan..."
 
   #     - name: Login to AWS ECR
   #       uses: aws-actions/configure-aws-credentials@v4
