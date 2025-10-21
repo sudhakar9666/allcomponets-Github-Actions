@@ -74,10 +74,10 @@ SLACK_BOT_TOKEN	<Slack bot token>	For posting messages**
 - aws access key  and secret key generatedin aws profile security option..
 - account id updated from aws  iam role user profile.
 - for sonar  project key we need to login sonarqube dahsboard  and login  with github repository and select our repo or all repos and login then create the project. then will get project key from
-dashboard and for token from need to security and gereate the token will sue in piplein yaml.
--for security scan for docker image we are using trivy and for trivy we dont have any particular dashboard for trivy and any tokens not there. directly it will scan the images while  running th pipeline  and scan vulnerabilities and will get he output logs from  the pipleine.
--for slack credentials need to login first slack and create the channel(workspace), once done login into slack api with salck and select our namespace after that go to settng sin that need to get bot chat read option select then install the bot app in he salck once install you will get slack bot token justcopy that one, now you got slack channel id and token.
--now we are completed all requirements for  project setup.
+dashboard and for token from need to security and gereate the token will sue in piplein yaml.  
+-for security scan for docker image we are using trivy and for trivy we dont have any particular dashboard for trivy and any tokens not there. directly it will scan the images while  running th pipeline  and scan vulnerabilities and will get he output logs from  the pipleine.  
+-for slack credentials need to login first slack and create the channel(workspace), once done login into slack api with salck and select our namespace after that go to settng sin that need to get bot chat read option select then install the bot app in he salck once install you will get slack bot token justcopy that one, now you got slack channel id and token.  
+-now we are completed all requirements for  project setup.  
 
 ###Project deployment steps### 
 
