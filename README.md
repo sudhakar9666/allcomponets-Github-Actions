@@ -30,6 +30,12 @@ steps:
 
 -once added now  ec2 can access the ecr to pull the image from ecr to  ec2 deployment.
 
+cmd:  
+**aws ec2 associate-iam-instance-profile \
+    --instance-id i-0123456789abcdef0 \
+    --iam-instance-profile Name=YourIAMRoleName**
+
+
 ##self hosted runner##
 
 -go to github actions page and setting sunder that actions nad runners self  hsted runner then add the self hosted runner ,select the what type of os we are deployed in the 
@@ -44,4 +50,23 @@ ec2 then select.
 - will use ./svs.sh to automating run the runner
 
 - sudo .svc.sh install,  start,stop
-  
+
+
+  ##environment variables and secrets##  
+**IMAGE_TAG	${{ github.sha }}	Unique tag for each commit  
+AWS_REGION	ap-south-1 (or your region)	Region of ECR  
+ECR_REPOSITORY	my-python-app	Your ECR repository name  
+#secrets##
+Secret Name	Value	Notes  
+AWS_ACCESS_KEY_ID	<your IAM user access key>	For GitHub Actions to push to ECR  
+AWS_SECRET_ACCESS_KEY	<your IAM user secret>	For GitHub Actions to push to ECR  
+AWS_ACCOUNT_ID	<12-digit AWS account ID>	Used in Docker image tag  
+SONAR_PROJECT_KEY	<your SonarQube project key>	For Sonar scan  
+SONAR_TOKEN	<your SonarQube token>	For Sonar scan authentication  
+EC2_PUBLIC_IP	<your EC2 public IP>	For SSH deployment  
+EC2_SSH_KEY	<your private SSH key>	For SSH access to EC2  
+SLACK_CHANNEL_ID	<channel ID>	For Slack notifications  
+SLACK_BOT_TOKEN	<Slack bot token>	For posting messages**
+
+
+
