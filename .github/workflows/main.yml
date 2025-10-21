@@ -107,8 +107,6 @@ jobs:
     environment:
       name: production
     steps:
-      - name: Wait for Approval
-        uses: hmarr/auto-approve-action@v2
 
       - name: Deploy Docker Image to EC2
         uses: appleboy/ssh-action@v0.1.6
