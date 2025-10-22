@@ -134,11 +134,16 @@ jobs:
   ## Slack notification on SUCCESS
       - name: Slack Notification (Success)
         if: success()
-        uses: slackapi/slack-github-action@v1.23.0
+        uses: slackapi/slack-github-action@v2.1.1
         with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            channel: ${{ secrets.SLACK_CHANNEL_ID }}
+            text: "✅ Deployment completed successfully on *${{ env.IMAGE_TAG }}*!"
           channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
           slack-message: "✅ Deployment completed successfully on ${{ env.IMAGE_TAG }}!"
-          bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+
 
       # Slack notification on FAILURE
       # - name: Slack Notification (Failure)
@@ -148,3 +153,5 @@ jobs:
       #     channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
       #     slack-message: "❌ Deployment failed on ${{ env.IMAGE_TAG }}!"
       #     bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      
