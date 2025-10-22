@@ -141,8 +141,9 @@ jobs:
           payload: |
             channel: ${{ secrets.SLACK_CHANNEL_ID }}
             text: "✅ Deployment completed successfully on *${{ env.IMAGE_TAG }}*!"
-          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
-          slack-message: "✅ Deployment completed successfully on ${{ env.IMAGE_TAG }}!"
+          # channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          # slack-message: "✅ Deployment completed successfully on ${{ env.IMAGE_TAG }}!"
+
 
 
       # Slack notification on FAILURE
