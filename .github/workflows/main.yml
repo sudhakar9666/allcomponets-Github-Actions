@@ -110,8 +110,8 @@ jobs:
     name: Deploy to EC2 (Manual Approval)
     needs: build-and-scan
     runs-on: ubuntu-latest
-    environment:
-      name: production
+    # environment:
+    #   name: production
     steps:
 
       - name: Deploy Docker Image to EC2
